@@ -3,3 +3,4 @@ __pycache__/
 .vscode/
 .env
 XDG_CACHE_HOME/
+.venv/
