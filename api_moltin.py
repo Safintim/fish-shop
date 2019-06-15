@@ -9,7 +9,7 @@ def get_headers():
     }
 
 
-def get_product(id):
+def get_product_by_id(id):
     url = f'https://api.moltin.com/v2/products/{id}'
     response = requests.get(url, headers=get_headers())
     return response.json()
@@ -31,7 +31,7 @@ def get_cart():
     return response.json()
 
 
-def put_product_to_cart(product_id):
+def push_product_to_cart_by_id(product_id):
     headers = get_headers()
     headers.update({'Content-Type': 'application/json'})
 
