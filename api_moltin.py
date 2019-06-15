@@ -9,6 +9,12 @@ def get_headers():
     }
 
 
+def get_product(id):
+    url = f'https://api.moltin.com/v2/products/{id}'
+    response = requests.get(url, headers=get_headers())
+    return response.json()
+
+
 def get_products():
     url = 'https://api.moltin.com/v2/products'
     response = requests.get(url, headers=get_headers())
