@@ -1,5 +1,6 @@
 import os
 import requests
+from dotenv import load_dotenv
 
 
 def get_headers():
@@ -11,7 +12,10 @@ def get_headers():
 def get_products():
     url = 'https://api.moltin.com/v2/products'
     response = requests.get(url, headers=get_headers())
-    return response.json()['data']
+    products = response.json()['data']
+
+    for product in products:
+        yield product
 
 
 def get_cart():
@@ -36,3 +40,12 @@ def put_product_to_cart(product_id):
     response = requests.post(url, headers=headers, json=payload)
 
     return response
+
+
+def main():
+    load_dotenv()
+    print(list(get_products()))
+
+
+if __name__ == '__main__':
+    main()
