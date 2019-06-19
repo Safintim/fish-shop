@@ -1,4 +1,5 @@
 import os
+import re
 import requests
 from datetime import datetime
 from pprint import pprint
@@ -15,11 +16,13 @@ def create_customer(client_id, phone_number):
 
     headers = get_headers()
     headers.update({'Content-Type': 'application/json'})
+    time = str(datetime.now().replace(second=0, microsecond=0))
+    unique_email = re.sub(r'[\s\-:]', '_', time) + '@m.ru'
     payload = {
         'data': {
             'type': 'customer',
             'name': str(phone_number),
-            'email': f'{client_id}@m.ru'
+            'email': unique_email
         }
     }
 
