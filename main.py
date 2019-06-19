@@ -1,7 +1,8 @@
 import re
 import os
-import logging
 import redis
+import logging
+from logs_conf import LogsHandler
 from api_moltin import (get_products, get_product_by_id,
                         delete_product_from_cart, get_img_by_id, push_product_to_cart_by_id,
                         get_cart, get_total_amount_from_cart, create_customer)
@@ -9,6 +10,9 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Filters, Updater
 from telegram.ext import CallbackQueryHandler, CommandHandler, MessageHandler
 from dotenv import load_dotenv
+
+
+logger = logging.getLogger(__name__)
 
 
 DATABASE = None
@@ -48,7 +52,8 @@ def handle_description(bot, update):
     if update.callback_query.data == 'В меню':
         handle_start(bot, update.callback_query)
         return 'MENU'
-    elif re.match(r'^\d{2}/\w+-\w+-\w+-\w+-\w+', update.callback_query.data):  # Нужна ли эта проверка
+    elif re.match(r'^\d{1,2}/[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}',
+                  update.callback_query.data):  # Нужна ли эта проверка
         amount, product = update.callback_query.data.split('/')
         push_product_to_cart_by_id(product, client_id, amount)
 
@@ -200,14 +205,21 @@ def generate_buttons_for_description(product_id):
 
 def error_callback(bot, update, error):
     try:
-        logging.error(str(update))
+        logging.error(f'(fish-shop) {update}')
         update.message.reply_text(text='Простите, возникла ошибка.')
     except Exception as err:
-        logging.critical(err)
+        logging.critical(f'(fish-shop) {err}')
 
 
 if __name__ == '__main__':
+    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                        level=logging.INFO,
+                        handlers=[LogsHandler()])
+
+    logger.info('(fish-shop) DeniskaShopTest запущен')
+
     load_dotenv()
+
     token = os.getenv('TELEGRAM_BOT_TOKEN')
     updater = Updater(token)
     dispatcher = updater.dispatcher
