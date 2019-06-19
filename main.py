@@ -56,6 +56,7 @@ def handle_description(bot, update):
                   update.callback_query.data):  # Нужна ли эта проверка
         amount, product = update.callback_query.data.split('/')
         push_product_to_cart_by_id(product, client_id, amount)
+        return 'DESCRIPTION'
 
 
 def handle_cart(bot, update):
@@ -83,6 +84,7 @@ def handle_cart(bot, update):
 
     reply_markup = InlineKeyboardMarkup(keyboard)
     update.callback_query.message.reply_text(text, reply_markup=reply_markup)
+    return 'CART'
 
 
 def handle_waiting_phone_number(bot, update):
@@ -93,6 +95,8 @@ def handle_waiting_phone_number(bot, update):
                                   f'В скором времени я свяэусь с вами')
         create_customer(update.message.chat_id, phone_number)
         handle_start(bot, update)
+        return 'MENU'
+    return 'WAITING_PHONE_NUMBER'
 
 
 def handle_users_reply(bot, update):
