@@ -1,5 +1,6 @@
 import os
 import requests
+from datetime import datetime
 from pprint import pprint
 from dotenv import load_dotenv
 
@@ -34,8 +35,8 @@ def delete_product_from_cart(client_id, product_id):
 
 def get_access_token():
     payload = {
-        'client_id': os.getenv('CLIENT_ID_MOLTIN'),
-        'client_secret': os.getenv('CLIENT_SECRET_MOLTIN'),
+        'client_id': os.environ.get('CLIENT_ID_MOLTIN'),
+        'client_secret': os.environ.get('CLIENT_SECRET_MOLTIN'),
         'grant_type': 'client_credentials'
     }
 
@@ -53,7 +54,7 @@ def get_cart(client_id):
 
 def get_headers():
     return {
-        'Authorization': f'Bearer {os.getenv("ACCESS_TOKEN_MOLTIN")}',
+        'Authorization': f'Bearer {os.environ.get("ACCESS_TOKEN_MOLTIN")}',
     }
 
 
@@ -107,8 +108,9 @@ def push_product_to_cart_by_id(product_id, client_id, amount):
 
 def main():
     load_dotenv()
-    pprint(get_products())
+    # pprint(get_products())
     pprint(requests.get('https://api.moltin.com/v2/customers', headers=get_headers()).json())
+    # print(os.environ.get('CLIENT_SECRET_MOLTIN'))
 
 
 if __name__ == '__main__':

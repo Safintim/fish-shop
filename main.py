@@ -134,9 +134,9 @@ def get_database_connection():
     global DATABASE
     if DATABASE is None:
         DATABASE = redis.Redis(
-            host=os.getenv("REDIS_HOST"),
-            port=os.getenv("REDIS_PORT"),
-            password=os.getenv("REDIS_PASSWORD"),
+            host=os.environ.get("REDIS_HOST"),
+            port=os.environ.get("REDIS_PORT"),
+            password=os.environ.get("REDIS_PASSWORD"),
             decode_responses=True,
             charset='utf-8')
     return DATABASE
@@ -224,7 +224,7 @@ if __name__ == '__main__':
 
     load_dotenv()
 
-    token = os.getenv('TELEGRAM_BOT_TOKEN')
+    token = os.environ.get('TELEGRAM_BOT_TOKEN')
     updater = Updater(token)
     dispatcher = updater.dispatcher
     dispatcher.add_handler(CallbackQueryHandler(handle_users_reply))
