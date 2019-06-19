@@ -22,8 +22,8 @@ def handle_start(bot, update):
     keyboard = generate_buttons_for_all_products_from_shop()
     keyboard.append([InlineKeyboardButton('Корзина', callback_data='Корзина')])
     reply_markup = InlineKeyboardMarkup(keyboard)
-    reference_update = update.message or update.callback_query.message
-    reference_update.reply_text('Пожалуйста, выберете товар:', reply_markup=reply_markup)
+    update_message = update.message or update.callback_query.message
+    update_message.reply_text('Пожалуйста, выберете товар:', reply_markup=reply_markup)
     return 'MENU'
 
 
@@ -50,11 +50,11 @@ def handle_menu(bot, update):
 
 def handle_description(bot, update):
     client_id = update.callback_query.message.chat_id
+    regex = r'^\d{1,2}/[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}'
     if update.callback_query.data == 'В меню':
         handle_start(bot, update.callback_query)
         return 'MENU'
-    elif re.match(r'^\d{1,2}/[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}',
-                  update.callback_query.data):  # Нужна ли эта проверка
+    elif re.match(regex, update.callback_query.data):  # Нужна ли эта проверка
         amount, product = update.callback_query.data.split('/')
         push_product_to_cart_by_id(product, client_id, amount)
         return 'DESCRIPTION'
@@ -62,14 +62,14 @@ def handle_description(bot, update):
 
 def handle_cart(bot, update):
     client_id = update.callback_query.message.chat_id
+    update_message = update.message or update.callback_query.message
 
     if update.callback_query.data == 'В меню':
         handle_start(bot, update.callback_query)
         return 'MENU'
     elif update.callback_query.data == 'Оплата':
         handle_waiting_phone_number(bot, update)
-        reference_update = update.message or update.callback_query.message
-        reference_update.reply_text('\nПришлите, пожалуйста, ваш номер')
+        update_message.reply_text('\nПришлите, пожалуйста, ваш номер')
         return 'WAITING_PHONE_NUMBER'
     else:
         product_id = update.callback_query.data
@@ -85,8 +85,7 @@ def handle_cart(bot, update):
     keyboard.append([InlineKeyboardButton('Оплата', callback_data='Оплата')])
 
     reply_markup = InlineKeyboardMarkup(keyboard)
-    reference_update = update.message or update.callback_query.message
-    reference_update.reply_text(text, reply_markup=reply_markup)
+    update_message.reply_text(text, reply_markup=reply_markup)
     return 'CART'
 
 
@@ -94,8 +93,8 @@ def handle_waiting_phone_number(bot, update):
 
     if update.message:
         phone_number = update.message.text
-        reference_update = update.message or update.callback_query.message
-        reference_update.reply_text(f'Вы прислали мне этот номер: {phone_number}\n'
+        update_message = update.message or update.callback_query.message
+        update_message.reply_text(f'Вы прислали мне этот номер: {phone_number}\n'
                                     f'В скором времени я свяэусь с вами')
         create_customer(update.message.chat_id, phone_number)
         handle_start(bot, update)
