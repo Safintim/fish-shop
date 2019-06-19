@@ -18,7 +18,6 @@ def is_token_works(func):
         if isinstance(response, str):  # Одна функция возращает строку
             pass
         elif response.get('errors'):
-            print('cart2')
             os.environ['ACCESS_TOKEN_MOLTIN'] = get_access_token()
             response = func(*args, **kwargs)
         return response
