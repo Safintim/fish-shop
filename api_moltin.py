@@ -42,10 +42,9 @@ def get_access_token():
         'client_secret': os.environ.get('CLIENT_SECRET_MOLTIN'),
         'grant_type': 'client_credentials'
     }
-
     url = 'https://api.moltin.com/oauth/access_token'
-    response = requests.post(url, json=payload, proxies=PROXIES)
-    return response.json()['access_token']
+    response = requests.post(url, data=payload, proxies=PROXIES)
+    return response.json()
 
 
 def get_cart(client_id):
@@ -111,9 +110,8 @@ def push_product_to_cart_by_id(product_id, client_id, amount):
 
 def main():
     load_dotenv()
-    # pprint(get_products())
-    pprint(requests.get('https://api.moltin.com/v2/customers', headers=get_headers()).json())
-    # print(os.environ.get('CLIENT_SECRET_MOLTIN'))
+    pprint(get_access_token())
+    pprint(get_products())
 
 
 if __name__ == '__main__':
