@@ -11,6 +11,22 @@ PROXIES = {
 }
 
 
+def is_token_works(func):
+
+    def decorator(*args, **kwargs):
+        try:
+            response = func(*args, **kwargs)
+            if response.get('errors'):
+                os.environ['ACCESS_TOKEN_MOLTIN'] = get_access_token()
+                response = func(*args, **kwargs)
+        except AttributeError:  # AttributeError так, как один метод возвращает строку
+            os.environ['ACCESS_TOKEN_MOLTIN'] = get_access_token()
+            response = func(*args, **kwargs)
+        return response
+    return decorator
+
+
+@is_token_works
 def create_customer(client_id, phone_number):
     url = 'https://api.moltin.com/v2/customers'
 
@@ -30,6 +46,7 @@ def create_customer(client_id, phone_number):
     return response.json()
 
 
+@is_token_works
 def delete_product_from_cart(client_id, product_id):
     url = f'https://api.moltin.com/v2/carts/{client_id}/items/{product_id}'
     response = requests.delete(url, headers=get_headers())
@@ -47,6 +64,7 @@ def get_access_token():
     return response.json()['access_token']
 
 
+@is_token_works
 def get_cart(client_id):
     url = f'https://api.moltin.com/v2/carts/{client_id}/items'
     response = requests.get(url, headers=get_headers(), proxies=PROXIES)
@@ -60,30 +78,35 @@ def get_headers():
     }
 
 
+@is_token_works
 def get_customer(client_id):
     url = f'https://api.moltin.com/v2/customers/{client_id}'
     response = requests.get(url, headers=get_headers())
     return response.json()
 
 
+@is_token_works
 def get_img_by_id(id):
     url = f'https://api.moltin.com/v2/files/{id}'
     response = requests.get(url, headers=get_headers(), proxies=PROXIES)
     return response.json()['data']['link']['href']
 
 
+@is_token_works
 def get_products():
     url = 'https://api.moltin.com/v2/products'
     response = requests.get(url, headers=get_headers(), proxies=PROXIES)
     return response.json()
 
 
+@is_token_works
 def get_product_by_id(id):
     url = f'https://api.moltin.com/v2/products/{id}'
     response = requests.get(url, headers=get_headers(), proxies=PROXIES)
     return response.json()
 
 
+@is_token_works
 def get_total_amount_from_cart(client_id):
     url = f'https://api.moltin.com/v2/carts/{client_id}'
     response = requests.get(url, headers=get_headers(), proxies=PROXIES)
@@ -91,6 +114,7 @@ def get_total_amount_from_cart(client_id):
     return response.json()
 
 
+@is_token_works
 def push_product_to_cart_by_id(product_id, client_id, amount):
     headers = get_headers()
     headers.update({'Content-Type': 'application/json'})
@@ -111,7 +135,6 @@ def push_product_to_cart_by_id(product_id, client_id, amount):
 def main():
     load_dotenv()
     pprint(get_access_token())
-    # pprint(get_products())
 
 
 if __name__ == '__main__':
