@@ -44,7 +44,7 @@ def get_access_token():
     }
     url = 'https://api.moltin.com/oauth/access_token'
     response = requests.post(url, data=payload, proxies=PROXIES)
-    return response.json()
+    return response.json()['access_token']
 
 
 def get_cart(client_id):
@@ -111,7 +111,7 @@ def push_product_to_cart_by_id(product_id, client_id, amount):
 def main():
     load_dotenv()
     pprint(get_access_token())
-    pprint(get_products())
+    # pprint(get_products())
 
 
 if __name__ == '__main__':
