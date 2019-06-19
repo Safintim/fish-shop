@@ -171,7 +171,7 @@ def make_text_description_product(product):
     stock = product['meta']['stock']['level']
 
     text = f'{name}\n\n' \
-           f'{price} per 100gm\n{stock}kg on stock\n\n'\
+           f'{price} per kg\n{stock}kg on stock\n\n'\
            f'{description}'
 
     return text
