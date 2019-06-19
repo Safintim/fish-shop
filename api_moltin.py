@@ -14,12 +14,11 @@ PROXIES = {
 def is_token_works(func):
 
     def decorator(*args, **kwargs):
-        try:
-            response = func(*args, **kwargs)
-            if response.get('errors'):
-                os.environ['ACCESS_TOKEN_MOLTIN'] = get_access_token()
-                response = func(*args, **kwargs)
-        except AttributeError:  # AttributeError так, как один метод возвращает строку
+        response = func(*args, **kwargs)
+        if isinstance(response, str):  # Одна функция возращает строку
+            pass
+        elif response.get('errors'):
+            print('cart2')
             os.environ['ACCESS_TOKEN_MOLTIN'] = get_access_token()
             response = func(*args, **kwargs)
         return response
@@ -129,7 +128,7 @@ def push_product_to_cart_by_id(product_id, client_id, amount):
     url = f'https://api.moltin.com/v2/carts/{client_id}/items'
     response = requests.post(url, headers=headers, json=payload, proxies=PROXIES)
 
-    return response
+    return response.json()
 
 
 def main():
