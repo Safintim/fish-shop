@@ -22,7 +22,8 @@ def handle_start(bot, update):
     keyboard = generate_buttons_for_all_products_from_shop()
     keyboard.append([InlineKeyboardButton('Корзина', callback_data='Корзина')])
     reply_markup = InlineKeyboardMarkup(keyboard)
-    update.message.reply_text('Пожалуйста, выберете товар:', reply_markup=reply_markup)
+    reference_update = update.message or update.callback_query.message
+    reference_update.reply_text('Пожалуйста, выберете товар:', reply_markup=reply_markup)
     return 'MENU'
 
 
@@ -64,10 +65,11 @@ def handle_cart(bot, update):
 
     if update.callback_query.data == 'В меню':
         handle_start(bot, update.callback_query)
-        return 'START'
+        return 'MENU'
     elif update.callback_query.data == 'Оплата':
         handle_waiting_phone_number(bot, update)
-        update.callback_query.message.reply_text('\nПришлите, пожалуйста, ваш номер')
+        reference_update = update.message or update.callback_query.message
+        reference_update.reply_text('\nПришлите, пожалуйста, ваш номер')
         return 'WAITING_PHONE_NUMBER'
     else:
         product_id = update.callback_query.data
@@ -83,7 +85,8 @@ def handle_cart(bot, update):
     keyboard.append([InlineKeyboardButton('Оплата', callback_data='Оплата')])
 
     reply_markup = InlineKeyboardMarkup(keyboard)
-    update.callback_query.message.reply_text(text, reply_markup=reply_markup)
+    reference_update = update.message or update.callback_query.message
+    reference_update.reply_text(text, reply_markup=reply_markup)
     return 'CART'
 
 
@@ -91,8 +94,9 @@ def handle_waiting_phone_number(bot, update):
 
     if update.message:
         phone_number = update.message.text
-        update.message.reply_text(f'Вы прислали мне этот номер: {phone_number}\n'
-                                  f'В скором времени я свяэусь с вами')
+        reference_update = update.message or update.callback_query.message
+        reference_update.reply_text(f'Вы прислали мне этот номер: {phone_number}\n'
+                                    f'В скором времени я свяэусь с вами')
         create_customer(update.message.chat_id, phone_number)
         handle_start(bot, update)
         return 'MENU'
