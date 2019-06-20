@@ -107,6 +107,12 @@ def get_product_by_id(id):
     return response.json()
 
 
+def get_product_from_cart(product_id, client_id):
+    for pr in get_cart(client_id)['data']:
+        if pr['product_id'] == product_id:
+            return pr
+
+
 @is_token_works
 def get_total_amount_from_cart(client_id):
     url = f'https://api.moltin.com/v2/carts/{client_id}'
