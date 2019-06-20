@@ -225,8 +225,12 @@ def make_text_description_product(product, client):
     product = product['data']
 
     product_from_cart = get_product_from_cart(product['id'], client)
-    quantity_product_in_cart = product_from_cart['quantity']
-    total_amount_product_in_cart = product_from_cart['value']['amount'] // 100
+
+    quantity_product_in_cart = 0
+    total_amount_product_in_cart = 0
+    if product_from_cart:
+        quantity_product_in_cart = product_from_cart['quantity']
+        total_amount_product_in_cart = product_from_cart['value']['amount'] // 100
 
     name = product['name']
     price = product['meta']['display_price']['with_tax']['formatted']
