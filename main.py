@@ -10,12 +10,16 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Filters, Updater
 from telegram.ext import CallbackQueryHandler, CommandHandler, MessageHandler
 from dotenv import load_dotenv
+from validate_email import validate_email
 
 
 logger = logging.getLogger(__name__)
 
 
 DATABASE = None
+
+
+PERSONAL_DATA = {}
 
 
 def handle_start(bot, update):
@@ -68,9 +72,9 @@ def handle_cart(bot, update):
         handle_start(bot, update.callback_query)
         return 'MENU'
     elif update.callback_query.data == 'Оплата':
-        handle_waiting_phone_number(bot, update)
-        update_message.reply_text('\nПришлите, пожалуйста, ваш номер')
-        return 'WAITING_PHONE_NUMBER'
+        handle_waiting_email(bot, update)
+        update_message.reply_text('\nПришлите, пожалуйста, ваш email')
+        return 'WAITING_EMAIL'
     else:
         product_id = update.callback_query.data
         delete_product_from_cart(client_id, product_id)
@@ -89,13 +93,29 @@ def handle_cart(bot, update):
     return 'CART'
 
 
+def handle_waiting_email(bot, update):
+    update_message = update.message or update.callback_query.message
+
+    if update.message:
+        email = update.message.text.strip()
+        if validate_email(email):
+            PERSONAL_DATA['email'] = email
+            handle_waiting_phone_number(bot, update)
+            update_message.reply_text('\nПришлите, пожалуйста, ваш номер телефона')
+            return 'WAITING_PHONE_NUMBER'
+        else:
+            update_message.reply_text(f'\nКажется, вы ввели неверный email: {email}\n Повторите попытку')
+            update_message = None
+    return 'WAITING_EMAIL'
+
+
 def handle_waiting_phone_number(bot, update):
 
     if update.message:
         phone_number = update.message.text
         update_message = update.message or update.callback_query.message
         update_message.reply_text(f'Вы прислали мне этот номер: {phone_number}\n'
-                                    f'В скором времени я свяэусь с вами')
+                                  f'В скором времени я свяэусь с вами')
         create_customer(update.message.chat_id, phone_number)
         handle_start(bot, update)
         return 'MENU'
@@ -125,6 +145,7 @@ def handle_users_reply(bot, update):
         'MENU': handle_menu,
         'DESCRIPTION': handle_description,
         'CART': handle_cart,
+        'WAITING_EMAIL': handle_waiting_email,
         'WAITING_PHONE_NUMBER': handle_waiting_phone_number
     }
 
