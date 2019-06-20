@@ -6,12 +6,14 @@ import phonenumbers
 from logs_conf import LogsHandler
 from api_moltin import (get_products, get_product_by_id,
                         delete_product_from_cart, get_img_by_id, push_product_to_cart_by_id,
-                        get_cart, get_total_amount_from_cart, create_customer)
+                        get_cart, get_total_amount_from_cart, create_customer,
+                        get_product_from_cart)
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Filters, Updater
 from telegram.ext import CallbackQueryHandler, CommandHandler, MessageHandler
 from dotenv import load_dotenv
 from validate_email import validate_email
+from pprint import pprint
 
 
 logger = logging.getLogger(__name__)
@@ -41,13 +43,14 @@ def handle_menu(bot, update):
 
     keyboard = generate_buttons_for_description(product_id)
     reply_markup = InlineKeyboardMarkup(keyboard)
+    client = update.callback_query.message.chat_id
     bot.send_photo(
-        chat_id=update.callback_query.message.chat_id,
+        chat_id=client,
         photo=url_img_product,
-        caption=make_text_description_product(product),
+        caption=make_text_description_product(product, client),
         reply_markup=reply_markup)
     bot.delete_message(
-        chat_id=update.callback_query.message.chat_id,
+        chat_id=client,
         message_id=update.callback_query.message.message_id)
 
     return 'DESCRIPTION'
@@ -211,16 +214,18 @@ def make_text_description_cart(cart, total_amount):
         text += f'{name}\n'\
                 f'{description}\n'\
                 f'{price} per kg\n'\
-                f'{quantity}kg in cart for {total_amount_product}\n\n'
+                f'{quantity}kg in cart for ${total_amount_product:.2f}\n\n'
 
     total_amount = total_amount['data']['meta']['display_price']['with_tax']['formatted']
     text += f'Total: {total_amount}'
     return text
 
 
-def make_text_description_product(product):
-
+def make_text_description_product(product, client):
     product = product['data']
+    product_from_cart = get_product_from_cart(product['id'], client)
+    quantity = product_from_cart['quantity']
+    total_amount_product = product_from_cart['value']['amount'] // 100
     name = product['name']
     price = product['meta']['display_price']['with_tax']['formatted']
     description = product['description']
@@ -228,7 +233,8 @@ def make_text_description_product(product):
 
     text = f'{name}\n\n' \
            f'{price} per kg\n{stock}kg on stock\n\n'\
-           f'{description}'
+           f'{description}\n\n'\
+           f'{quantity}kg in cart for ${total_amount_product:.2f}\n\n'
 
     return text
 
