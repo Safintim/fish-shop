@@ -223,9 +223,11 @@ def make_text_description_cart(cart, total_amount):
 
 def make_text_description_product(product, client):
     product = product['data']
+
     product_from_cart = get_product_from_cart(product['id'], client)
-    quantity = product_from_cart['quantity']
-    total_amount_product = product_from_cart['value']['amount'] // 100
+    quantity_product_in_cart = product_from_cart['quantity']
+    total_amount_product_in_cart = product_from_cart['value']['amount'] // 100
+
     name = product['name']
     price = product['meta']['display_price']['with_tax']['formatted']
     description = product['description']
@@ -234,7 +236,7 @@ def make_text_description_product(product, client):
     text = f'{name}\n\n' \
            f'{price} per kg\n{stock}kg on stock\n\n'\
            f'{description}\n\n'\
-           f'{quantity}kg in cart for ${total_amount_product:.2f}\n\n'
+           f'{quantity_product_in_cart}kg in cart for ${total_amount_product_in_cart:.2f}\n\n'
 
     return text
 
