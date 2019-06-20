@@ -8,7 +8,7 @@ from api_moltin import (get_products, get_product_by_id,
                         delete_product_from_cart, get_img_by_id, push_product_to_cart_by_id,
                         get_cart, get_total_amount_from_cart, create_customer,
                         get_product_from_cart)
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from telegram.ext import Filters, Updater
 from telegram.ext import CallbackQueryHandler, CommandHandler, MessageHandler
 from dotenv import load_dotenv
@@ -47,7 +47,8 @@ def handle_menu(bot, update):
         chat_id=client,
         photo=url_img_product,
         caption=make_text_description_product(product, client),
-        reply_markup=reply_markup)
+        reply_markup=reply_markup,
+        parse_mode=ParseMode.MARKDOWN)
     bot.delete_message(
         chat_id=client,
         message_id=update.callback_query.message.message_id)
@@ -92,7 +93,7 @@ def handle_cart(bot, update):
     keyboard.append([InlineKeyboardButton('Оплата', callback_data='Оплата')])
 
     reply_markup = InlineKeyboardMarkup(keyboard)
-    update_message.reply_text(text, reply_markup=reply_markup)
+    update_message.reply_text(text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
     return 'CART'
 
 
@@ -210,13 +211,13 @@ def make_text_description_cart(cart, total_amount):
         quantity = product['quantity']
         total_amount_product = product['value']['amount'] // 100
 
-        text += f'{name}\n'\
-                f'{description}\n'\
-                f'{price} per kg\n'\
-                f'{quantity}kg in cart for ${total_amount_product:.2f}\n\n'
+        text += f'*{name}*\n'\
+                f'_{description}_\n'\
+                f'*{price} per kg*\n'\
+                f'*{quantity}kg in cart for ${total_amount_product:.2f}*\n\n'
 
     total_amount = total_amount['data']['meta']['display_price']['with_tax']['formatted']
-    text += f'Total: {total_amount}'
+    text += f'*Total: {total_amount}*'
     return text
 
 
@@ -236,10 +237,10 @@ def make_text_description_product(product, client):
     description = product['description']
     stock = product['meta']['stock']['level']
 
-    text = f'{name}\n\n' \
-           f'{price} per kg\n{stock}kg on stock\n\n'\
-           f'{description}\n\n'\
-           f'{quantity_product_in_cart}kg in cart for ${total_amount_product_in_cart:.2f}\n\n'
+    text = f'*{name}*\n\n' \
+           f'*{price} per kg*\n*{stock}kg on stock*\n\n'\
+           f'_{description}_\n\n'\
+           f'_{quantity_product_in_cart}kg in cart for ${total_amount_product_in_cart:.2f}_\n\n'
 
     return text
 
