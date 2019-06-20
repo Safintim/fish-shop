@@ -122,19 +122,35 @@ def handle_waiting_phone_number(bot, update):
 
         if phonenumbers.is_valid_number(phone_number):
             PERSONAL_DATA['name'] = phone_number.national_number
+
+            keyboard = generate_buttons_for_confirm_personal_data()
+            reply_markup = InlineKeyboardMarkup(keyboard)
             update_message.reply_text(f'\nВаш email: {PERSONAL_DATA["email"]}\n'
-                                      f'Ваш номер телефона: {PERSONAL_DATA["name"]}')
-            create_customer(PERSONAL_DATA)
-            update_message.reply_text(f'В скором времени я свяжусь с вами')
-            handle_start(bot, update)
-            return 'MENU'
+                                      f'Ваш номер телефона: {PERSONAL_DATA["name"]}',
+                                      reply_markup=reply_markup)
+            return 'CONFIRM_PERSONAL_DATA'
         else:
-            update_message.reply_text(f'\nКажется, вы неправильно набрали номер: {phone_number.national_number}\n Повторите попытку')
+            update_message.reply_text(f'\nКажется, вы неправильно набрали номер: {phone_number.national_number}'
+                                      '\n Повторите попытку')
             update_message = None
     else:
         update_message.reply_text('\nДолжны быть цифры')
 
     return 'WAITING_PHONE_NUMBER'
+
+
+def handle_confirm_personal_data(bot, update):
+    update_message = update.message or update.callback_query.message
+    if update.callback_query.data == 'Верно':
+        create_customer(PERSONAL_DATA)
+        update_message.reply_text(f'В скором времени я свяжусь с вами')
+        handle_start(bot, update)
+        return 'MENU'
+    elif update.callback_query.data == 'Неверно':
+        handle_waiting_email(bot, update)
+        update_message.reply_text('\nПришлите, пожалуйста, ваш email')
+        return 'WAITING_EMAIL'
+    return 'CONFIRM_PERSONAL_DATA'
 
 
 def handle_users_reply(bot, update):
@@ -161,7 +177,8 @@ def handle_users_reply(bot, update):
         'DESCRIPTION': handle_description,
         'CART': handle_cart,
         'WAITING_EMAIL': handle_waiting_email,
-        'WAITING_PHONE_NUMBER': handle_waiting_phone_number
+        'WAITING_PHONE_NUMBER': handle_waiting_phone_number,
+        'CONFIRM_PERSONAL_DATA': handle_confirm_personal_data
     }
 
     state_handler = states_functions[user_state]
@@ -242,6 +259,15 @@ def generate_buttons_for_description(product_id):
         [InlineKeyboardButton('Корзина', callback_data='Корзина')],
         [InlineKeyboardButton('В меню', callback_data='В меню')]
       ]
+
+    return keyboard
+
+
+def generate_buttons_for_confirm_personal_data():
+    keyboard = [
+                [InlineKeyboardButton('Верно', callback_data='Верно')],
+                [InlineKeyboardButton('Неверно', callback_data='Неверно')]
+            ]
 
     return keyboard
 
