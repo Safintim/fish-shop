@@ -1,7 +1,5 @@
 import os
-import re
 import requests
-from datetime import datetime
 from pprint import pprint
 from dotenv import load_dotenv
 
@@ -25,18 +23,16 @@ def is_token_works(func):
 
 
 @is_token_works
-def create_customer(client_id, phone_number):
+def create_customer(personal_data):
     url = 'https://api.moltin.com/v2/customers'
 
     headers = get_headers()
     headers.update({'Content-Type': 'application/json'})
-    time = str(datetime.now().replace(second=0, microsecond=0))
-    unique_email = re.sub(r'[\s\-:]', '_', time) + '@m.ru'
     payload = {
         'data': {
             'type': 'customer',
-            'name': str(phone_number),
-            'email': unique_email
+            'name': str(personal_data['name']),
+            'email': personal_data['email']
         }
     }
 

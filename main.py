@@ -2,6 +2,7 @@ import re
 import os
 import redis
 import logging
+import phonenumbers
 from logs_conf import LogsHandler
 from api_moltin import (get_products, get_product_by_id,
                         delete_product_from_cart, get_img_by_id, push_product_to_cart_by_id,
@@ -110,15 +111,29 @@ def handle_waiting_email(bot, update):
 
 
 def handle_waiting_phone_number(bot, update):
+    update_message = update.message or update.callback_query.message
 
-    if update.message:
+    if update.message.text == PERSONAL_DATA['email']:
+        return 'WAITING_PHONE_NUMBER'
+
+    if re.match(r'^\+{0,1}\d+', update.message.text):
         phone_number = update.message.text
-        update_message = update.message or update.callback_query.message
-        update_message.reply_text(f'Вы прислали мне этот номер: {phone_number}\n'
-                                  f'В скором времени я свяэусь с вами')
-        create_customer(update.message.chat_id, phone_number)
-        handle_start(bot, update)
-        return 'MENU'
+        phone_number = phonenumbers.parse(phone_number, 'RU')
+
+        if phonenumbers.is_valid_number(phone_number):
+            PERSONAL_DATA['name'] = phone_number.national_number
+            update_message.reply_text(f'\nВаш email: {PERSONAL_DATA["email"]}\n'
+                                      f'Ваш номер телефона: {PERSONAL_DATA["name"]}')
+            create_customer(PERSONAL_DATA)
+            update_message.reply_text(f'В скором времени я свяжусь с вами')
+            handle_start(bot, update)
+            return 'MENU'
+        else:
+            update_message.reply_text(f'\nКажется, вы неправильно набрали номер: {phone_number.national_number}\n Повторите попытку')
+            update_message = None
+    else:
+        update_message.reply_text('\nДолжны быть цифры')
+
     return 'WAITING_PHONE_NUMBER'
 
 
