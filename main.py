@@ -4,10 +4,11 @@ import redis
 import logging
 import phonenumbers
 from logs_conf import LogsHandler
-from api_moltin import (get_products, get_product_by_id,
-                        delete_product_from_cart, get_img_by_id, push_product_to_cart_by_id,
-                        get_cart, get_total_amount_from_cart, create_customer,
-                        get_product_from_cart)
+from description import make_text_description_cart, make_text_description_product
+from buttons import (generate_buttons_for_all_products_from_shop, generate_buttons_for_all_products_from_cart,
+                     generate_buttons_for_description, generate_buttons_for_confirm_personal_data)
+from api_moltin import (get_product_by_id, delete_product_from_cart, get_img_by_id, push_product_to_cart_by_id,
+                        get_cart, get_total_amount_from_cart, create_customer)
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from telegram.ext import Filters, Updater
 from telegram.ext import CallbackQueryHandler, CommandHandler, MessageHandler
@@ -199,89 +200,6 @@ def get_database_connection():
             decode_responses=True,
             charset='utf-8')
     return DATABASE
-
-
-def make_text_description_cart(cart, total_amount):
-    text = ''
-    for product in cart['data']:
-
-        name = product['name']
-        description = product['description']
-        price = product['meta']['display_price']['with_tax']['unit']['formatted']
-        quantity = product['quantity']
-        total_amount_product = product['value']['amount'] // 100
-
-        text += f'*{name}*\n'\
-                f'_{description}_\n'\
-                f'*{price} per kg*\n'\
-                f'*{quantity}kg in cart for ${total_amount_product:.2f}*\n\n'
-
-    total_amount = total_amount['data']['meta']['display_price']['with_tax']['formatted']
-    text += f'*Total: {total_amount}*'
-    return text
-
-
-def make_text_description_product(product, client):
-    product = product['data']
-
-    product_from_cart = get_product_from_cart(product['id'], client)
-
-    quantity_product_in_cart = 0
-    total_amount_product_in_cart = 0
-    if product_from_cart:
-        quantity_product_in_cart = product_from_cart['quantity']
-        total_amount_product_in_cart = product_from_cart['value']['amount'] // 100
-
-    name = product['name']
-    price = product['meta']['display_price']['with_tax']['formatted']
-    description = product['description']
-    stock = product['meta']['stock']['level']
-
-    text = f'*{name}*\n\n' \
-           f'*{price} per kg*\n*{stock}kg on stock*\n\n'\
-           f'_{description}_\n\n'\
-           f'_{quantity_product_in_cart}kg in cart for ${total_amount_product_in_cart:.2f}_\n\n'
-
-    return text
-
-
-def generate_buttons_for_all_products_from_shop():
-    keyboard = []
-    for product in get_products()['data']:
-        keyboard.append([InlineKeyboardButton(product['name'], callback_data=product['id'])])
-    return keyboard
-
-
-def generate_buttons_for_all_products_from_cart(client_id):
-    keyboard = []
-    for product in get_cart(client_id)['data']:
-        keyboard.append([InlineKeyboardButton(f'Убрать из корзины {product["name"]}',
-                                              callback_data=product['id'])])
-
-    return keyboard
-
-
-def generate_buttons_for_description(product_id):
-    keyboard = [
-        [
-            InlineKeyboardButton('5', callback_data=f'5/{product_id}'),
-            InlineKeyboardButton('10', callback_data=f'10/{product_id}'),
-            InlineKeyboardButton('15', callback_data=f'15/{product_id}')
-        ],
-        [InlineKeyboardButton('Корзина', callback_data='Корзина')],
-        [InlineKeyboardButton('В меню', callback_data='В меню')]
-      ]
-
-    return keyboard
-
-
-def generate_buttons_for_confirm_personal_data():
-    keyboard = [
-                [InlineKeyboardButton('Верно', callback_data='Верно')],
-                [InlineKeyboardButton('Неверно', callback_data='Неверно')]
-            ]
-
-    return keyboard
 
 
 def error_callback(bot, update, error):
