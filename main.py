@@ -13,7 +13,6 @@ from telegram.ext import Filters, Updater
 from telegram.ext import CallbackQueryHandler, CommandHandler, MessageHandler
 from dotenv import load_dotenv
 from validate_email import validate_email
-from pprint import pprint
 
 
 logger = logging.getLogger(__name__)
