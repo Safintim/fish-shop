@@ -80,6 +80,13 @@ def get_customer(client_id):
 
 
 @is_token_works
+def get_customers():
+    url = 'https://api.moltin.com/v2/customers/'
+    response = requests.get(url, headers=get_headers())
+    return response.json()
+
+
+@is_token_works
 def get_img_by_id(id):
     url = f'https://api.moltin.com/v2/files/{id}'
     response = requests.get(url, headers=get_headers(), proxies=PROXIES)
