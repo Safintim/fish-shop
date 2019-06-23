@@ -14,13 +14,14 @@ TOKEN = os.environ.get('ACCESS_TOKEN_MOLTIN')
 def is_token_works(func):
 
     def decorator(*args, **kwargs):
-        response = func(*args, **kwargs)
-        if isinstance(response, str):  # Одна функция возращает строку
-            pass
-        elif response.get('errors'):
-            global TOKEN
-            TOKEN = get_access_token()
+        try:
             response = func(*args, **kwargs)
+        except requests.HTTPError as error:
+            response = error
+            if error.response.status_code == 401:
+                global TOKEN
+                TOKEN = get_access_token()
+                response = func(*args, **kwargs)
         return response
     return decorator
 
@@ -40,6 +41,7 @@ def create_customer(personal_data):
     }
 
     response = requests.post(url, headers=headers, json=payload)
+    response.raise_for_status()
     return response.json()
 
 
@@ -47,6 +49,7 @@ def create_customer(personal_data):
 def delete_product_from_cart(client_id, product_id):
     url = f'https://api.moltin.com/v2/carts/{client_id}/items/{product_id}'
     response = requests.delete(url, headers=get_headers())
+    response.raise_for_status()
     return response.json()
 
 
@@ -58,6 +61,7 @@ def get_access_token():
     }
     url = 'https://api.moltin.com/oauth/access_token'
     response = requests.post(url, data=payload, proxies=PROXIES)
+    response.raise_for_status()
     return response.json()['access_token']
 
 
@@ -65,7 +69,7 @@ def get_access_token():
 def get_cart(client_id):
     url = f'https://api.moltin.com/v2/carts/{client_id}/items'
     response = requests.get(url, headers=get_headers(), proxies=PROXIES)
-
+    response.raise_for_status()
     return response.json()
 
 
@@ -79,6 +83,7 @@ def get_headers():
 def get_customer(client_id):
     url = f'https://api.moltin.com/v2/customers/{client_id}'
     response = requests.get(url, headers=get_headers())
+    response.raise_for_status()
     return response.json()
 
 
@@ -86,6 +91,7 @@ def get_customer(client_id):
 def get_customers():
     url = 'https://api.moltin.com/v2/customers/'
     response = requests.get(url, headers=get_headers())
+    response.raise_for_status()
     return response.json()
 
 
@@ -93,6 +99,7 @@ def get_customers():
 def get_img_by_id(id):
     url = f'https://api.moltin.com/v2/files/{id}'
     response = requests.get(url, headers=get_headers(), proxies=PROXIES)
+    response.raise_for_status()
     return response.json()['data']['link']['href']
 
 
@@ -100,6 +107,7 @@ def get_img_by_id(id):
 def get_products():
     url = 'https://api.moltin.com/v2/products'
     response = requests.get(url, headers=get_headers(), proxies=PROXIES)
+    response.raise_for_status()
     return response.json()
 
 
@@ -107,6 +115,7 @@ def get_products():
 def get_product_by_id(id):
     url = f'https://api.moltin.com/v2/products/{id}'
     response = requests.get(url, headers=get_headers(), proxies=PROXIES)
+    response.raise_for_status()
     return response.json()
 
 
@@ -120,7 +129,7 @@ def get_product_from_cart(product_id, client_id):
 def get_total_amount_from_cart(client_id):
     url = f'https://api.moltin.com/v2/carts/{client_id}'
     response = requests.get(url, headers=get_headers(), proxies=PROXIES)
-
+    response.raise_for_status()
     return response.json()
 
 
@@ -138,7 +147,7 @@ def push_product_to_cart_by_id(product_id, client_id, amount):
     }
     url = f'https://api.moltin.com/v2/carts/{client_id}/items'
     response = requests.post(url, headers=headers, json=payload, proxies=PROXIES)
-
+    response.raise_for_status()
     return response.json()
 
 
