@@ -17,7 +17,7 @@ def is_token_works(func):
         try:
             response = func(*args, **kwargs)
         except requests.HTTPError as error:
-            response = error
+            response = None
             if error.response.status_code == 401:
                 global TOKEN
                 TOKEN = get_access_token()
