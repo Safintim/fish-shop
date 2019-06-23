@@ -30,7 +30,7 @@ def handle_start(bot, update):
     keyboard.append([InlineKeyboardButton('Корзина', callback_data='Корзина')])
     reply_markup = InlineKeyboardMarkup(keyboard)
     update_message = update.message or update.callback_query.message
-    update_message.reply_text('Пожалуйста, выберете товар:', reply_markup=reply_markup)
+    update_message.reply_text('Пожалуйста, выберите товар:', reply_markup=reply_markup)
     return 'MENU'
 
 
@@ -202,7 +202,7 @@ def get_database_connection():
     return DATABASE
 
 
-def error_callback(bot, update, error):
+def handle_error(bot, update, error):
     try:
         logging.error(f'(fish-shop) {update}')
         update.message.reply_text(text='Простите, возникла ошибка.')
@@ -210,7 +210,7 @@ def error_callback(bot, update, error):
         logging.critical(f'(fish-shop) {err}')
 
 
-if __name__ == '__main__':
+def main():
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                         level=logging.INFO,
                         handlers=[LogsHandler()])
@@ -225,5 +225,9 @@ if __name__ == '__main__':
     dispatcher.add_handler(CallbackQueryHandler(handle_users_reply))
     dispatcher.add_handler(MessageHandler(Filters.text, handle_users_reply))
     dispatcher.add_handler(CommandHandler('start', handle_users_reply))
-    dispatcher.add_error_handler(error_callback)
+    dispatcher.add_error_handler(handle_error)
     updater.start_polling()
+
+
+if __name__ == '__main__':
+    main()
