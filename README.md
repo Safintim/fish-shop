@@ -8,7 +8,7 @@ fish-shop - это телегамм_бот-магазин. В данной де�
 
 ## Пример работы
 
-![Alt Text](http://ipic.su/img/img7/fs/fish-shop.1560951555.gif)
+![Alt Text](http://ipic.su/img/img7/fs/fish-shop2.1561297725.gif)
 
 ## Требования
 
