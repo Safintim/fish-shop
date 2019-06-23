@@ -59,13 +59,18 @@ def handle_menu(bot, update):
 
 def handle_description(bot, update):
     client_id = update.callback_query.message.chat_id
+    update_message = update.message or update.callback_query.message
     regex = r'^\d{1,2}/[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}'
     if update.callback_query.data == 'В меню':
         handle_start(bot, update.callback_query)
         return 'MENU'
-    elif re.match(regex, update.callback_query.data):  # Нужна ли эта проверка
+    elif re.match(regex, update.callback_query.data):
         amount, product = update.callback_query.data.split('/')
-        push_product_to_cart_by_id(product, client_id, amount)
+        quantity_in_stock = get_product_by_id(product)['data']['meta']['stock']['level']
+        if int(quantity_in_stock) > int(amount):
+            push_product_to_cart_by_id(product, client_id, amount)
+        else:
+            update_message.reply_text(f'\nНа складе {quantity_in_stock}kg')
         return 'DESCRIPTION'
 
 
