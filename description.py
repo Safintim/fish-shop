@@ -2,7 +2,7 @@ from api_moltin import get_product_from_cart
 
 
 def make_text_description_cart(cart, total_amount):
-    text = ''
+    parts_text = []
     for product in cart['data']:
 
         name = product['name']
@@ -11,14 +11,14 @@ def make_text_description_cart(cart, total_amount):
         quantity = product['quantity']
         total_amount_product = product['value']['amount'] // 100
 
-        text += f'*{name}*\n'\
-                f'_{description}_\n'\
-                f'*{price} per kg*\n'\
-                f'*{quantity}kg in cart for ${total_amount_product:.2f}*\n\n'
+        parts_text.append(f'*{name}*')
+        parts_text.append(f'_{description}_')
+        parts_text.append(f'*{price} per kg*')
+        parts_text.append(f'*{quantity}kg in cart for ${total_amount_product:.2f}*\n')
 
     total_amount = total_amount['data']['meta']['display_price']['with_tax']['formatted']
-    text += f'*Total: {total_amount}*'
-    return text
+    parts_text.append(f'*Total: {total_amount}*')
+    return '\n'.join(parts_text)
 
 
 def make_text_description_product(product, client):
@@ -28,6 +28,7 @@ def make_text_description_product(product, client):
 
     quantity_product_in_cart = 0
     total_amount_product_in_cart = 0
+    parts_text = []
     if product_from_cart:
         quantity_product_in_cart = product_from_cart['quantity']
         total_amount_product_in_cart = product_from_cart['value']['amount'] // 100
@@ -37,9 +38,9 @@ def make_text_description_product(product, client):
     description = product['description']
     stock = product['meta']['stock']['level']
 
-    text = f'*{name}*\n\n' \
-           f'*{price} per kg*\n*{stock}kg on stock*\n\n'\
-           f'_{description}_\n\n'\
-           f'_{quantity_product_in_cart}kg in cart for ${total_amount_product_in_cart:.2f}_\n\n'
+    parts_text.append(f'*{name}*\n')
+    parts_text.append(f'*{price} per kg*\n*{stock}kg on stock*\n')
+    parts_text.append(f'_{description}_\n')
+    parts_text.append(f'_{quantity_product_in_cart}kg in cart for ${total_amount_product_in_cart:.2f}_\n')
 
-    return text
+    return '\n'.join(parts_text)
