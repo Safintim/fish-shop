@@ -8,6 +8,8 @@ PROXIES = {
     'http': 'http://213.211.146.13:3128',
 }
 
+TOKEN = os.environ.get('ACCESS_TOKEN_MOLTIN')
+
 
 def is_token_works(func):
 
@@ -16,7 +18,8 @@ def is_token_works(func):
         if isinstance(response, str):  # Одна функция возращает строку
             pass
         elif response.get('errors'):
-            os.environ['ACCESS_TOKEN_MOLTIN'] = get_access_token()
+            global TOKEN
+            TOKEN = get_access_token()
             response = func(*args, **kwargs)
         return response
     return decorator
@@ -68,7 +71,7 @@ def get_cart(client_id):
 
 def get_headers():
     return {
-        'Authorization': f'Bearer {os.environ.get("ACCESS_TOKEN_MOLTIN")}',
+        'Authorization': f'Bearer {TOKEN}',
     }
 
 
