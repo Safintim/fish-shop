@@ -27,7 +27,7 @@ def is_token_works(func):
 
 
 @is_token_works
-def create_customer(personal_data):
+def create_customer(name, email):
     url = 'https://api.moltin.com/v2/customers'
 
     headers = get_headers()
@@ -35,8 +35,8 @@ def create_customer(personal_data):
     payload = {
         'data': {
             'type': 'customer',
-            'name': str(personal_data['name']),
-            'email': personal_data['email']
+            'name': name,
+            'email': email
         }
     }
 

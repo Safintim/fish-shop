@@ -109,7 +109,7 @@ def handle_waiting_email(bot, update):
     if update.message:
         email = update.message.text.strip()
         if validate_email(email):
-            PERSONAL_DATA['email'] = email
+            database.set(f'{update.message.chat_id}_email', email)
             handle_waiting_phone_number(bot, update)
             update_message.reply_text('\nПришлите, пожалуйста, ваш номер телефона')
             return 'WAITING_PHONE_NUMBER'
@@ -122,7 +122,7 @@ def handle_waiting_email(bot, update):
 def handle_waiting_phone_number(bot, update):
     update_message = update.message or update.callback_query.message
 
-    if update.message.text == PERSONAL_DATA['email']:
+    if update.message.text == database.get(f'{update.message.chat_id}_email'):
         return 'WAITING_PHONE_NUMBER'
 
     if re.match(r'^\+{0,1}\d+', update.message.text):
@@ -130,12 +130,14 @@ def handle_waiting_phone_number(bot, update):
         phone_number = phonenumbers.parse(phone_number, 'RU')
 
         if phonenumbers.is_valid_number(phone_number):
-            PERSONAL_DATA['name'] = phone_number.national_number
+            database.set(f'{update.message.chat_id}_phone', phone_number.national_number)
 
             keyboard = generate_buttons_for_confirm_personal_data()
             reply_markup = InlineKeyboardMarkup(keyboard)
-            update_message.reply_text(f'\nВаш email: {PERSONAL_DATA["email"]}\n'
-                                      f'Ваш номер телефона: {PERSONAL_DATA["name"]}',
+
+            email = database.get(f'{update.message.chat_id}_email')
+            update_message.reply_text(f'\nВаш email: {email}\n'
+                                      f'Ваш номер телефона: {phone_number.national_number}',
                                       reply_markup=reply_markup)
             return 'CONFIRM_PERSONAL_DATA'
         else:
@@ -151,7 +153,9 @@ def handle_waiting_phone_number(bot, update):
 def handle_confirm_personal_data(bot, update):
     update_message = update.message or update.callback_query.message
     if update.callback_query.data == 'Верно':
-        create_customer(PERSONAL_DATA)
+        name = database.get(f'{update_message.chat_id}_phone')
+        email = database.get(f'{update_message.chat_id}_email')
+        create_customer(name, email)
         update_message.reply_text(f'В скором времени я свяжусь с вами')
         handle_start(bot, update)
         return 'MENU'
