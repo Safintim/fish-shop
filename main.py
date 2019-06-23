@@ -19,7 +19,7 @@ from validate_email import validate_email
 logger = logging.getLogger(__name__)
 
 
-DATABASE = None
+database = None
 
 
 PERSONAL_DATA = {}
@@ -163,7 +163,7 @@ def handle_confirm_personal_data(bot, update):
 
 
 def handle_users_reply(bot, update):
-    DATABASE = get_database_connection()
+    database = get_database_connection()
     if update.message:
         user_reply = update.message.text
         chat_id = update.message.chat_id
@@ -176,9 +176,9 @@ def handle_users_reply(bot, update):
         user_state = 'START'
     elif user_reply == 'Корзина':
         user_state = 'CART'
-        DATABASE.set(chat_id, user_state)
+        database.set(chat_id, user_state)
     else:
-        user_state = DATABASE.get(chat_id)
+        user_state = database.get(chat_id)
 
     states_functions = {
         'START': handle_start,
@@ -192,19 +192,19 @@ def handle_users_reply(bot, update):
 
     state_handler = states_functions[user_state]
     next_state = state_handler(bot, update)
-    DATABASE.set(chat_id, next_state)
+    database.set(chat_id, next_state)
 
 
 def get_database_connection():
-    global DATABASE
-    if DATABASE is None:
-        DATABASE = redis.Redis(
+    global database
+    if database is None:
+        database = redis.Redis(
             host=os.environ.get("REDIS_HOST"),
             port=os.environ.get("REDIS_PORT"),
             password=os.environ.get("REDIS_PASSWORD"),
             decode_responses=True,
             charset='utf-8')
-    return DATABASE
+    return database
 
 
 def handle_error(bot, update, error):
